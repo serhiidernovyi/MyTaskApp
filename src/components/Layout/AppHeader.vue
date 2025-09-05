@@ -29,8 +29,16 @@
   </header>
 </template>
 
-<script setup lang="ts">
+<script>
 import { HomeIcon, TicketIcon } from '@heroicons/vue/24/outline'
+
+export default {
+  name: 'AppHeader',
+  components: {
+    HomeIcon,
+    TicketIcon
+  }
+}
 </script>
 
 <style scoped>

@@ -7,9 +7,17 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script>
 import { RouterView } from 'vue-router'
 import AppHeader from './components/Layout/AppHeader.vue'
+
+export default {
+  name: 'App',
+  components: {
+    RouterView,
+    AppHeader
+  }
+}
 </script>
 
 <style>
