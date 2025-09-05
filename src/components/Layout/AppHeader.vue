@@ -100,3 +100,5 @@ import { HomeIcon, TicketIcon } from '@heroicons/vue/24/outline'
   height: 1.25rem;
 }
 </style>
+
+

@@ -140,8 +140,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { onMounted } from 'vue'
+<script>
 import { 
   ArrowPathIcon, 
   ExclamationTriangleIcon, 
@@ -150,21 +149,44 @@ import {
   CpuChipIcon,
   UserIcon
 } from '@heroicons/vue/24/outline'
-import { useStatsStore } from '@/stores/stats'
+import { useStatsStore } from '@/stores/stats.js'
 import StatusChart from '@/components/Charts/StatusChart.vue'
 import CategoryChart from '@/components/Charts/CategoryChart.vue'
 
-const statsStore = useStatsStore()
-
-// Используем store напрямую для реактивности
-const { fetchStats } = statsStore
-
-onMounted(() => {
-  fetchStats()
-})
-
-function refreshStats() {
-  fetchStats()
+export default {
+  name: 'DashboardView',
+  components: {
+    ArrowPathIcon,
+    ExclamationTriangleIcon,
+    TicketIcon,
+    QuestionMarkCircleIcon,
+    CpuChipIcon,
+    UserIcon,
+    StatusChart,
+    CategoryChart
+  },
+  computed: {
+    loading() {
+      return this.statsStore.loading
+    }
+  },
+  mounted() {
+    this.fetchStats()
+  },
+  methods: {
+    refreshStats() {
+      this.fetchStats()
+    },
+    fetchStats() {
+      return this.statsStore.fetchStats()
+    }
+  },
+  setup() {
+    const statsStore = useStatsStore()
+    return {
+      statsStore
+    }
+  }
 }
 </script>
 

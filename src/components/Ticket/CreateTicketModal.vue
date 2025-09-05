@@ -68,70 +68,77 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed } from 'vue'
+<script>
 import { XMarkIcon } from '@heroicons/vue/24/outline'
-import { useTicketsStore } from '@/stores/tickets'
+import { useTicketsStore } from '@/stores/tickets.js'
 
-interface Emits {
-  (e: 'close'): void
-  (e: 'created'): void
-}
-
-const emit = defineEmits<Emits>()
-const ticketsStore = useTicketsStore()
-
-const form = ref({
-  subject: '',
-  body: '',
-  status: 'new' as 'new' | 'open' | 'pending' | 'closed'
-})
-
-const errors = ref<Record<string, string>>({})
-const loading = ref(false)
-
-const isFormValid = computed(() => {
-  return form.value.subject.trim().length > 0 && 
-         form.value.body.trim().length > 0
-})
-
-function validateForm(): boolean {
-  errors.value = {}
-  
-  if (!form.value.subject.trim()) {
-    errors.value.subject = 'Subject is required'
-  }
-  
-  if (!form.value.body.trim()) {
-    errors.value.body = 'Description is required'
-  }
-  
-  return Object.keys(errors.value).length === 0
-}
-
-async function handleSubmit() {
-  if (!validateForm()) return
-  
-  loading.value = true
-  
-  try {
-    await ticketsStore.createTicket({
-      subject: form.value.subject.trim(),
-      body: form.value.body.trim(),
-      status: form.value.status
-    })
-    
-    emit('created')
-  } catch (err) {
-    console.error('Failed to create ticket:', err)
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleOverlayClick() {
-  if (!loading.value) {
-    emit('close')
+export default {
+  name: 'CreateTicketModal',
+  components: {
+    XMarkIcon
+  },
+  emits: ['close', 'created'],
+  data() {
+    return {
+      form: {
+        subject: '',
+        body: '',
+        status: 'new'
+      },
+      errors: {},
+      loading: false
+    }
+  },
+  computed: {
+    isFormValid() {
+      return this.form.subject.trim().length > 0 && 
+             this.form.body.trim().length > 0
+    }
+  },
+  methods: {
+    validateForm() {
+      this.errors = {}
+      
+      if (!this.form.subject.trim()) {
+        this.errors.subject = 'Subject is required'
+      }
+      
+      if (!this.form.body.trim()) {
+        this.errors.body = 'Description is required'
+      }
+      
+      return Object.keys(this.errors).length === 0
+    },
+    async handleSubmit() {
+      if (!this.validateForm()) return
+      
+      this.loading = true
+      
+      try {
+        await this.ticketsStore.createTicket({
+          subject: this.form.subject.trim(),
+          body: this.form.body.trim(),
+          status: this.form.status
+        })
+        
+        this.$emit('created')
+      } catch (err) {
+        console.error('Failed to create ticket:', err)
+      } finally {
+        this.loading = false
+      }
+    },
+    handleOverlayClick() {
+      if (!this.loading) {
+        this.$emit('close')
+      }
+    }
+  },
+  setup() {
+    const ticketsStore = useTicketsStore()
+    return {
+      ticketsStore
+    }
   }
 }
 </script>
@@ -288,3 +295,5 @@ function handleOverlayClick() {
   cursor: not-allowed;
 }
 </style>
+
+

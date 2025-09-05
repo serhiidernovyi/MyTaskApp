@@ -5,6 +5,7 @@
       <button 
         @click="showCreateModal = true"
         class="tickets-view__create-button"
+        data-testid="create-ticket-button"
       >
         <PlusIcon class="tickets-view__create-icon" />
         Create Ticket
@@ -91,64 +92,88 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useTicketsStore } from '@/stores/tickets'
+<script>
+import { useTicketsStore } from '@/stores/tickets.js'
 import { PlusIcon, ExclamationTriangleIcon, TicketIcon } from '@heroicons/vue/24/outline'
 import TicketCard from '@/components/Ticket/TicketCard.vue'
 import TicketFilters from '@/components/Ticket/TicketFilters.vue'
 import CreateTicketModal from '@/components/Ticket/CreateTicketModal.vue'
 
-const router = useRouter()
-const ticketsStore = useTicketsStore()
-
-// Используем store напрямую для реактивности
-const { fetchTickets, setFilters, clearError } = ticketsStore
-
-const showCreateModal = ref(false)
-const classifyingTicketId = ref<string | null>(null)
-
-onMounted(() => {
-  fetchTickets()
-})
-
-
-function handleFiltersUpdate(newFilters: typeof ticketsStore.filters) {
-  setFilters(newFilters)
-  fetchTickets(1)
-}
-
-function handleViewTicket(id: string) {
-  router.push(`/tickets/${id}`)
-}
-
-async function handleClassifyTicket(id: string) {
-  classifyingTicketId.value = id
-  try {
-    await ticketsStore.classifyTicket(id)
-  } catch (err) {
-    console.error('Classification failed:', err)
-  } finally {
-    classifyingTicketId.value = null
+export default {
+  name: 'TicketsView',
+  components: {
+    PlusIcon,
+    ExclamationTriangleIcon,
+    TicketIcon,
+    TicketCard,
+    TicketFilters,
+    CreateTicketModal
+  },
+  data() {
+    return {
+      showCreateModal: false,
+      classifyingTicketId: null
+    }
+  },
+  computed: {
+    // Store доступен через setup()
+  },
+  mounted() {
+    this.fetchTickets()
+  },
+  watch: {
+    'ticketsStore.filters'() {
+      this.clearError()
+    }
+  },
+  methods: {
+    handleFiltersUpdate(newFilters) {
+      this.ticketsStore.setFilters(newFilters)
+      this.fetchTickets(1)
+    },
+    handleViewTicket(id) {
+      this.$router.push(`/tickets/${id}`)
+    },
+    async handleClassifyTicket(id) {
+      console.log('TicketsView: Starting classification for ticket:', id)
+      this.classifyingTicketId = id
+      try {
+        await this.ticketsStore.classifyTicket(id)
+        console.log('TicketsView: Classification completed successfully')
+        // Добавляем небольшую задержку, чтобы пользователь увидел "Classifying..."
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      } catch (err) {
+        console.error('TicketsView: Classification failed:', err)
+      } finally {
+        this.classifyingTicketId = null
+      }
+    },
+    handleTicketCreated() {
+      this.showCreateModal = false
+      this.fetchTickets(this.ticketsStore.currentPage)
+    },
+    goToPage(page) {
+      if (page >= 1 && page <= this.ticketsStore.lastPage) {
+        this.fetchTickets(page)
+      }
+    },
+    fetchTickets(page) {
+      return this.ticketsStore.fetchTickets(page)
+    },
+    setFilters(filters) {
+      return this.ticketsStore.setFilters(filters)
+    },
+    clearError() {
+      return this.ticketsStore.clearError()
+    }
+  },
+  setup() {
+    const ticketsStore = useTicketsStore()
+    return {
+      ticketsStore
+    }
   }
 }
-
-function handleTicketCreated() {
-  showCreateModal.value = false
-  fetchTickets(ticketsStore.currentPage)
-}
-
-function goToPage(page: number) {
-  if (page >= 1 && page <= ticketsStore.lastPage) {
-    fetchTickets(page)
-  }
-}
-
-// Очищаем ошибки при изменении фильтров
-watch(() => ticketsStore.filters, () => {
-  clearError()
-})
 </script>
 
 <style scoped>

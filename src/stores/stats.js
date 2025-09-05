@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { ticketsApi, type StatsResponse } from '@/api/tickets'
+import { ticketsApi } from '@/api/tickets.js'
 
 export const useStatsStore = defineStore('stats', () => {
   // State
-  const stats = ref<StatsResponse | null>(null)
+  const stats = ref(null)
   const loading = ref(false)
-  const error = ref<string | null>(null)
+  const error = ref(null)
 
   // Getters
   const categories = computed(() => stats.value?.categories || {})
@@ -34,17 +34,14 @@ export const useStatsStore = defineStore('stats', () => {
     error.value = null
     
     try {
-      stats.value = await ticketsApi.getStats()
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Ошибка загрузки статистики'
+      const response = await ticketsApi.getStats()
+      stats.value = response
+    } catch (err) {
+      error.value = 'Ошибка загрузки статистики'
       console.error('Error fetching stats:', err)
     } finally {
       loading.value = false
     }
-  }
-
-  function clearError() {
-    error.value = null
   }
 
   return {
@@ -66,7 +63,6 @@ export const useStatsStore = defineStore('stats', () => {
     avgConfidence,
     
     // Actions
-    fetchStats,
-    clearError
+    fetchStats
   }
 })

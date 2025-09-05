@@ -37,73 +37,85 @@
     </div>
     
     <div class="ticket-card__footer">
-      <div class="ticket-card__meta">
-        <span class="ticket-card__date">
-          {{ formatDate(ticket.created_at) }}
-        </span>
-        <span v-if="ticket.category_is_manual" class="ticket-card__manual">
-          Manual
-        </span>
-      </div>
-      
-      <div class="ticket-card__actions">
-        <button 
-          @click="$emit('view', ticket.id)"
-          class="ticket-card__button ticket-card__button--primary"
-        >
-          View
-        </button>
-        <button 
-          v-if="!ticket.category"
-          @click="$emit('classify', ticket.id)"
+      <div class="ticket-card__footer-top">
+        <div class="ticket-card__meta">
+          <span v-if="ticket.category_is_manual" class="ticket-card__manual">
+            Manual Classification
+          </span>
+        </div>
+        
+        <div class="ticket-card__actions">
+          <button 
+            @click="$emit('view', ticket.id)"
+            class="ticket-card__button ticket-card__button--primary"
+            data-testid="view-button"
+          >
+            View
+          </button>
+                  <button 
+          v-if="!ticket.category_is_manual"
+          @click="handleClassifyClick"
           class="ticket-card__button ticket-card__button--secondary"
           :disabled="loading"
+          data-testid="classify-button"
         >
           {{ loading ? 'Classifying...' : 'Classify' }}
         </button>
+        </div>
+      </div>
+      
+      <div class="ticket-card__footer-bottom">
+        <span class="ticket-card__date">
+          {{ formatDate(ticket.created_at) }}
+        </span>
       </div>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { type Ticket } from '@/api/tickets'
-
-interface Props {
-  ticket: Ticket
-  loading?: boolean
-}
-
-defineProps<Props>()
-
-defineEmits<{
-  view: [id: string]
-  classify: [id: string]
-}>()
-
-function getStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    new: 'New',
-    open: 'Open',
-    pending: 'Pending',
-    closed: 'Closed'
+<script>
+export default {
+  name: 'TicketCard',
+  props: {
+    ticket: {
+      type: Object,
+      required: true
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    }
+  },
+  emits: ['view', 'classify'],
+  methods: {
+    handleClassifyClick() {
+      console.log('TicketCard: Classify button clicked for ticket:', this.ticket.id)
+      console.log('TicketCard: Current loading state:', this.loading)
+      this.$emit('classify', this.ticket.id)
+    },
+    getStatusLabel(status) {
+      const labels = {
+        new: 'New',
+        open: 'Open',
+        pending: 'Pending',
+        closed: 'Closed'
+      }
+      return labels[status] || status
+    },
+    truncateText(text, maxLength) {
+      if (text.length <= maxLength) return text
+      return text.substring(0, maxLength) + '...'
+    },
+    formatDate(dateString) {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
   }
-  return labels[status] || status
-}
-
-function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text
-  return text.substring(0, maxLength) + '...'
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
 }
 </script>
 
@@ -115,6 +127,9 @@ function formatDate(dateString: string): string {
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .ticket-card:hover {
@@ -183,7 +198,7 @@ function formatDate(dateString: string): string {
 }
 
 .ticket-card__body {
-  margin-bottom: 1rem;
+  flex: 1;
 }
 
 .ticket-card__description {
@@ -211,16 +226,28 @@ function formatDate(dateString: string): string {
 
 .ticket-card__footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.375rem;
   padding-top: 1rem;
   border-top: 1px solid #e5e7eb;
 }
 
+.ticket-card__footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .ticket-card__meta {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.ticket-card__footer-bottom {
+  display: flex;
+  justify-content: flex-start;
 }
 
 .ticket-card__date {
@@ -232,6 +259,14 @@ function formatDate(dateString: string): string {
   font-size: 0.75rem;
   color: #f59e0b;
   font-weight: 500;
+  background: #fef3c7;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  border: 1px solid #fbbf24;
+  white-space: nowrap;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
 }
 
 .ticket-card__actions {
@@ -273,3 +308,5 @@ function formatDate(dateString: string): string {
   cursor: not-allowed;
 }
 </style>
+
+
