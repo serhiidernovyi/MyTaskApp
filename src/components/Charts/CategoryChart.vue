@@ -22,34 +22,40 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { computed } from 'vue'
-
-interface Props {
-  data: Record<string, number>
-}
-
-const props = defineProps<Props>()
-
-const categoryColors = {
-  bug: '#ef4444',
-  feature: '#3b82f6',
-  question: '#f59e0b',
-  complaint: '#dc2626',
-  compliment: '#10b981',
-  general: '#6b7280'
-}
-
-const maxValue = computed(() => {
-  return Math.max(...Object.values(props.data || {}))
-})
-
-function getCategoryColor(category: string): string {
-  return categoryColors[category as keyof typeof categoryColors] || '#6b7280'
-}
-
-function getCategoryLabel(category: string): string {
-  return category.charAt(0).toUpperCase() + category.slice(1)
+<script>
+export default {
+  name: 'CategoryChart',
+  props: {
+    data: {
+      type: Object,
+      default: () => ({})
+    }
+  },
+  data() {
+    return {
+      categoryColors: {
+        bug: '#ef4444',
+        feature: '#3b82f6',
+        question: '#f59e0b',
+        complaint: '#dc2626',
+        compliment: '#10b981',
+        general: '#6b7280'
+      }
+    }
+  },
+  computed: {
+    maxValue() {
+      return Math.max(...Object.values(this.data || {}))
+    }
+  },
+  methods: {
+    getCategoryColor(category) {
+      return this.categoryColors[category] || '#6b7280'
+    },
+    getCategoryLabel(category) {
+      return category.charAt(0).toUpperCase() + category.slice(1)
+    }
+  }
 }
 </script>
 

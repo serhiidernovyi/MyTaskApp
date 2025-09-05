@@ -162,7 +162,6 @@ The project uses BEM (Block Element Modifier) naming convention:
 - Users have basic knowledge of support ticket systems
 - OpenAI API is available and configured
 - Database is properly set up with required tables
-- Modern browsers with ES6+ support
 
 ### Trade-offs
 - **No TypeScript**: Chose JavaScript for simplicity and faster development
@@ -173,7 +172,6 @@ The project uses BEM (Block Element Modifier) naming convention:
 
 ### What I'd do with more time
 - Add comprehensive error handling and user feedback
-- Implement real-time updates with WebSockets
 - Add advanced filtering and sorting options
 - Create comprehensive test suite
 - Add dark/light theme toggle
@@ -181,34 +179,5 @@ The project uses BEM (Block Element Modifier) naming convention:
 - Add bulk operations for tickets
 - Create admin panel for system configuration
 
-## Environment Variables
-
-```env
-# Database
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=my_task_app
-DB_USERNAME=root
-DB_PASSWORD=
-
-# Queue
-QUEUE_CONNECTION=database
-
-# OpenAI
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_CLASSIFY_ENABLED=true
-
-# App
-APP_NAME="Smart Ticket Triage & Dashboard"
-APP_ENV=local
-APP_DEBUG=true
-APP_URL=http://localhost:8000
-
-# Frontend
-VITE_API_URL=http://localhost:8000/api
-```
-
 ## License
-
 This project is part of a take-home task and is not intended for production use.

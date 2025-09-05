@@ -22,39 +22,44 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { computed } from 'vue'
-
-interface Props {
-  data: Record<string, number>
-}
-
-const props = defineProps<Props>()
-
-const statusColors = {
-  new: '#6b7280',
-  open: '#3b82f6',
-  pending: '#f59e0b',
-  closed: '#10b981'
-}
-
-const statusLabels = {
-  new: 'New',
-  open: 'Open',
-  pending: 'Pending',
-  closed: 'Closed'
-}
-
-const maxValue = computed(() => {
-  return Math.max(...Object.values(props.data || {}))
-})
-
-function getStatusColor(status: string): string {
-  return statusColors[status as keyof typeof statusColors] || '#6b7280'
-}
-
-function getStatusLabel(status: string): string {
-  return statusLabels[status as keyof typeof statusLabels] || status
+<script>
+export default {
+  name: 'StatusChart',
+  props: {
+    data: {
+      type: Object,
+      default: () => ({})
+    }
+  },
+  data() {
+    return {
+      statusColors: {
+        new: '#6b7280',
+        open: '#3b82f6',
+        pending: '#f59e0b',
+        closed: '#10b981'
+      },
+      statusLabels: {
+        new: 'New',
+        open: 'Open',
+        pending: 'Pending',
+        closed: 'Closed'
+      }
+    }
+  },
+  computed: {
+    maxValue() {
+      return Math.max(...Object.values(this.data || {}))
+    }
+  },
+  methods: {
+    getStatusColor(status) {
+      return this.statusColors[status] || '#6b7280'
+    },
+    getStatusLabel(status) {
+      return this.statusLabels[status] || status
+    }
+  }
 }
 </script>
 

@@ -2,12 +2,12 @@
   <div class="dashboard">
     <div class="dashboard__header">
       <h1 class="dashboard__title">Dashboard</h1>
-      <button 
+      <button
         @click="refreshStats"
         class="dashboard__refresh"
         :disabled="loading"
       >
-        <ArrowPathIcon 
+        <ArrowPathIcon
           class="dashboard__refresh-icon"
           :class="{ 'dashboard__refresh-icon--spinning': loading }"
         />
@@ -98,8 +98,8 @@
         <div class="dashboard__chart-card">
           <h3 class="dashboard__chart-title">Top Issues</h3>
           <div class="dashboard__top-issues">
-            <div 
-              v-for="issue in statsStore.topIssues" 
+            <div
+              v-for="issue in statsStore.topIssues"
               :key="issue.category"
               class="dashboard__issue"
             >
@@ -108,7 +108,7 @@
                 <span class="dashboard__issue-count">{{ issue.count }} tickets</span>
               </div>
               <div class="dashboard__issue-bar">
-                <div 
+                <div
                   class="dashboard__issue-progress"
                   :style="{ width: `${issue.percentage}%` }"
                 ></div>
@@ -128,7 +128,7 @@
               {{ Math.round(statsStore.avgConfidence * 100) }}%
             </div>
             <div class="dashboard__confidence-bar">
-              <div 
+              <div
                 class="dashboard__confidence-progress"
                 :style="{ width: `${statsStore.avgConfidence * 100}%` }"
               ></div>
@@ -141,10 +141,10 @@
 </template>
 
 <script>
-import { 
-  ArrowPathIcon, 
-  ExclamationTriangleIcon, 
-  TicketIcon, 
+import {
+  ArrowPathIcon,
+  ExclamationTriangleIcon,
+  TicketIcon,
   QuestionMarkCircleIcon,
   CpuChipIcon,
   UserIcon
@@ -248,7 +248,6 @@ export default {
   to { transform: rotate(360deg); }
 }
 
-.dashboard__loading,
 .dashboard__error {
   display: flex;
   flex-direction: column;
@@ -256,16 +255,6 @@ export default {
   justify-content: center;
   padding: 4rem 2rem;
   text-align: center;
-}
-
-.dashboard__spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 3px solid #e5e7eb;
-  border-top: 3px solid #3b82f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
 }
 
 .dashboard__error-icon {
@@ -493,15 +482,15 @@ export default {
   .dashboard__overview {
     grid-template-columns: 1fr;
   }
-  
+
   .dashboard__charts {
     grid-template-columns: 1fr;
   }
-  
+
   .dashboard__bottom {
     grid-template-columns: 1fr;
   }
-  
+
   .dashboard__confidence-content {
     flex-direction: column;
     align-items: stretch;

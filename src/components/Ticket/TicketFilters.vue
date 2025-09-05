@@ -1,7 +1,7 @@
 <template>
   <div class="ticket-filters">
     <div class="ticket-filters__container">
-      <div class="ticket-filters__search">
+      <div class="ticket-filters__controls">
         <div class="ticket-filters__search-input">
           <MagnifyingGlassIcon class="ticket-filters__search-icon" />
           <input
@@ -12,9 +12,9 @@
             @input="debouncedSearch"
           />
         </div>
-      </div>
-      
-      <div class="ticket-filters__controls">
+        
+        <div class="ticket-filters__divider"></div>
+        
         <select 
           v-model="localFilters.status"
           class="ticket-filters__select"
@@ -35,10 +35,8 @@
           <option value="">All Categories</option>
           <option value="bug">Bug</option>
           <option value="feature">Feature</option>
+          <option value="support">Support</option>
           <option value="question">Question</option>
-          <option value="complaint">Complaint</option>
-          <option value="compliment">Compliment</option>
-          <option value="general">General</option>
         </select>
         
         <select 
@@ -53,15 +51,14 @@
         <input
           v-model="localFilters.created_at"
           type="date"
-          class="ticket-filters__input"
-          placeholder="Filter by date"
+          class="ticket-filters__date"
           @change="applyFilters"
         />
         
         <button 
+          v-if="hasActiveFilters"
           @click="clearFilters"
           class="ticket-filters__clear"
-          :disabled="!hasActiveFilters"
         >
           Clear Filters
         </button>
@@ -70,92 +67,96 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+<script>
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
 
-interface Props {
-  filters: {
-    status: string
-    category: string
-    search: string
-    sort_created_at: 'ASC' | 'DESC'
-    created_at: string
+export default {
+  name: 'TicketFilters',
+  components: {
+    MagnifyingGlassIcon
+  },
+  props: {
+    filters: {
+      type: Object,
+      required: true
+    }
+  },
+  emits: ['update:filters'],
+  data() {
+    return {
+      localFilters: { ...this.filters },
+      searchTimeout: null
+    }
+  },
+  computed: {
+    hasActiveFilters() {
+      return this.localFilters.status !== '' ||
+             this.localFilters.category !== '' ||
+             this.localFilters.search !== '' ||
+             this.localFilters.sort_created_at !== 'DESC' ||
+             this.localFilters.created_at !== ''
+    }
+  },
+  watch: {
+    filters: {
+      handler(newFilters) {
+        this.localFilters = { ...newFilters }
+      },
+      deep: true
+    }
+  },
+  methods: {
+    debouncedSearch() {
+      if (this.searchTimeout) {
+        clearTimeout(this.searchTimeout)
+      }
+      
+      this.searchTimeout = setTimeout(() => {
+        this.applyFilters()
+      }, 500)
+    },
+    applyFilters() {
+      this.$emit('update:filters', { ...this.localFilters })
+    },
+    clearFilters() {
+      this.localFilters = {
+        status: '',
+        category: '',
+        search: '',
+        sort_created_at: 'DESC',
+        created_at: ''
+      }
+      this.applyFilters()
+    }
   }
 }
-
-interface Emits {
-  (e: 'update:filters', filters: Props['filters']): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
-
-const localFilters = ref({ ...props.filters })
-
-let searchTimeout: NodeJS.Timeout | null = null
-
-const hasActiveFilters = computed(() => {
-  return localFilters.value.status !== '' ||
-         localFilters.value.category !== '' ||
-         localFilters.value.search !== '' ||
-         localFilters.value.sort_created_at !== 'DESC' ||
-         localFilters.value.created_at !== ''
-})
-
-function debouncedSearch() {
-  if (searchTimeout) {
-    clearTimeout(searchTimeout)
-  }
-  
-  searchTimeout = setTimeout(() => {
-    applyFilters()
-  }, 500)
-}
-
-function applyFilters() {
-  emit('update:filters', { ...localFilters.value })
-}
-
-function clearFilters() {
-  localFilters.value = {
-    status: '',
-    category: '',
-    search: '',
-    sort_created_at: 'DESC',
-    created_at: ''
-  }
-  applyFilters()
-}
-
-// Синхронизируем с внешними фильтрами
-watch(() => props.filters, (newFilters) => {
-  localFilters.value = { ...newFilters }
-}, { deep: true })
 </script>
 
 <style scoped>
 .ticket-filters {
   background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 0;
+  margin-bottom: 1rem;
 }
 
 .ticket-filters__container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.ticket-filters__search {
-  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .ticket-filters__search-input {
   position: relative;
-  max-width: 400px;
+  max-width: 300px;
+}
+
+.ticket-filters__divider {
+  flex: 1;
+  height: 2rem;
+  background-color: transparent;
+  margin: 0 1rem;
+  flex-shrink: 0;
 }
 
 .ticket-filters__search-icon {
@@ -170,24 +171,19 @@ watch(() => props.filters, (newFilters) => {
 
 .ticket-filters__input {
   width: 100%;
-  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  padding: 0.5rem 0.75rem 0.5rem 2.5rem;
   border: 1px solid #d1d5db;
   border-radius: 0.375rem;
   font-size: 0.875rem;
   transition: border-color 0.2s;
+  height: 2.5rem;
+  box-sizing: border-box;
 }
 
 .ticket-filters__input:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.ticket-filters__input[type="date"] {
-  min-width: 115px;
-  max-width: 135px;
-  height: 2.5rem;
-  padding: 0.5rem 0.75rem;
 }
 
 .ticket-filters__controls {
@@ -197,17 +193,20 @@ watch(() => props.filters, (newFilters) => {
   align-items: center;
 }
 
-.ticket-filters__select {
+.ticket-filters__select,
+.ticket-filters__date {
   padding: 0.5rem 0.75rem;
   border: 1px solid #d1d5db;
   border-radius: 0.375rem;
   font-size: 0.875rem;
   background: white;
-  min-width: 120px;
   transition: border-color 0.2s;
+  height: 2.5rem;
+  box-sizing: border-box;
 }
 
-.ticket-filters__select:focus {
+.ticket-filters__select:focus,
+.ticket-filters__date:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
@@ -215,33 +214,32 @@ watch(() => props.filters, (newFilters) => {
 
 .ticket-filters__clear {
   padding: 0.5rem 1rem;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  background: #ef4444;
+  color: white;
+  border: none;
   border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s;
+  height: 2.5rem;
+  box-sizing: border-box;
 }
 
-.ticket-filters__clear:hover:not(:disabled) {
-  background: #e5e7eb;
+.ticket-filters__clear:hover {
+  background: #dc2626;
 }
 
-.ticket-filters__clear:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-@media (min-width: 768px) {
-  .ticket-filters__container {
-    flex-direction: row;
-    align-items: center;
+@media (max-width: 640px) {
+  .ticket-filters__controls {
+    flex-direction: column;
+    align-items: stretch;
   }
   
-  .ticket-filters__search {
-    flex: 1;
+  .ticket-filters__select,
+  .ticket-filters__date,
+  .ticket-filters__clear {
+    width: 100%;
   }
 }
 </style>

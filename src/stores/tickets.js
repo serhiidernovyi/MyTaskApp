@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import { ticketsApi } from '@/api/tickets.js'
 
 export const useTicketsStore = defineStore('tickets', () => {
-  // State
   const tickets = ref([])
   const currentTicket = ref(null)
   const loading = ref(false)
@@ -19,8 +18,9 @@ export const useTicketsStore = defineStore('tickets', () => {
   const filters = ref({
     status: '',
     category: '',
-    sort: 'created_at',
-    order: 'desc'
+    search: '',
+    sort_created_at: 'DESC',
+    created_at: '',
   })
 
   // Getters
@@ -32,13 +32,22 @@ export const useTicketsStore = defineStore('tickets', () => {
   async function fetchTickets(page = 1) {
     loading.value = true
     error.value = null
-    
+
     try {
-      const response = await ticketsApi.getTickets({
+      const apiParams = {
         page,
         ...filters.value
+      }
+
+      Object.keys(apiParams).forEach(key => {
+        if (apiParams[key] === '' || apiParams[key] === null || apiParams[key] === undefined) {
+          delete apiParams[key]
+        }
       })
-      
+
+
+      const response = await ticketsApi.getTickets(apiParams)
+
       tickets.value = response.data
       pagination.value = {
         total: response.total,
@@ -49,7 +58,7 @@ export const useTicketsStore = defineStore('tickets', () => {
         to: response.to
       }
     } catch (err) {
-      error.value = 'Ошибка загрузки тикетов'
+      error.value = 'Error fetching tickets'
       console.error('Error fetching tickets:', err)
     } finally {
       loading.value = false
@@ -59,13 +68,13 @@ export const useTicketsStore = defineStore('tickets', () => {
   async function fetchTicket(id) {
     loading.value = true
     error.value = null
-    
+
     try {
       const ticket = await ticketsApi.getTicket(id)
       currentTicket.value = ticket
       return ticket
     } catch (err) {
-      error.value = 'Ошибка загрузки тикета'
+      error.value = 'Error fetching ticket'
       console.error('Error fetching ticket:', err)
       throw err
     } finally {
@@ -76,13 +85,13 @@ export const useTicketsStore = defineStore('tickets', () => {
   async function createTicket(ticketData) {
     loading.value = true
     error.value = null
-    
+
     try {
       const newTicket = await ticketsApi.createTicket(ticketData)
       tickets.value.unshift(newTicket)
       return newTicket
     } catch (err) {
-      error.value = 'Ошибка создания тикета'
+      error.value = 'Error creating ticket'
       console.error('Error creating ticket:', err)
       throw err
     } finally {
@@ -93,24 +102,22 @@ export const useTicketsStore = defineStore('tickets', () => {
   async function updateTicket(id, ticketData) {
     loading.value = true
     error.value = null
-    
+
     try {
       const updatedTicket = await ticketsApi.updateTicket(id, ticketData)
-      
-      // Update in tickets list
+
       const index = tickets.value.findIndex(ticket => ticket.id === id)
       if (index !== -1) {
         tickets.value[index] = updatedTicket
       }
-      
-      // Update current ticket if it's the same
+
       if (currentTicket.value && currentTicket.value.id === id) {
         currentTicket.value = updatedTicket
       }
-      
+
       return updatedTicket
     } catch (err) {
-      error.value = 'Ошибка обновления тикета'
+      error.value = 'Error update ticket'
       console.error('Error updating ticket:', err)
       throw err
     } finally {
@@ -119,17 +126,15 @@ export const useTicketsStore = defineStore('tickets', () => {
   }
 
   async function classifyTicket(id) {
-    console.log('Store: Starting classification for ticket:', id)
     loading.value = true
     error.value = null
-    
+
     try {
       const response = await ticketsApi.classifyTicket(id)
-      console.log('Store: Classification API response:', response)
-      
+
       // Refresh the ticket data after classification
       await fetchTicket(id)
-      
+
       return response
     } catch (err) {
       console.error('Store: Classification error:', {
@@ -138,7 +143,7 @@ export const useTicketsStore = defineStore('tickets', () => {
         status: err.response?.status,
         data: err.response?.data
       })
-      error.value = err.response?.data?.message || err.message || 'Ошибка классификации тикета'
+      error.value = err.response?.data?.message || err.message || 'Error classify'
       throw err
     } finally {
       loading.value = false
@@ -161,12 +166,12 @@ export const useTicketsStore = defineStore('tickets', () => {
     error,
     pagination,
     filters,
-    
+
     // Getters
     currentPage,
     lastPage,
     totalTickets,
-    
+
     // Actions
     fetchTickets,
     fetchTicket,

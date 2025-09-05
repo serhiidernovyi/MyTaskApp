@@ -1,6 +1,5 @@
 import axios from 'axios'
 
-// Create axios instance
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
   headers: {
@@ -9,7 +8,6 @@ const api = axios.create({
   }
 })
 
-// Request interceptor
 api.interceptors.request.use(
   (config) => {
     // Add auth token if available
@@ -24,7 +22,6 @@ api.interceptors.request.use(
   }
 )
 
-// Response interceptor
 api.interceptors.response.use(
   (response) => {
     return response
@@ -39,21 +36,21 @@ api.interceptors.response.use(
   }
 )
 
-// API functions
 export const ticketsApi = {
   async getTickets(params = {}) {
     const urlParams = new URLSearchParams()
-    
+
     // Add pagination
     if (params.page) urlParams.append('page', params.page)
     if (params.per_page) urlParams.append('per_page', params.per_page)
-    
+
     // Add filters
     if (params.status) urlParams.append('status', params.status)
     if (params.category) urlParams.append('category', params.category)
-    if (params.sort) urlParams.append('sort', params.sort)
-    if (params.order) urlParams.append('order', params.order)
-    
+    if (params.search) urlParams.append('search', params.search)
+    if (params.sort_created_at) urlParams.append('sort_created_at', params.sort_created_at)
+    if (params.created_at) urlParams.append('created_at', params.created_at)
+
     const url = `/tickets?${urlParams.toString()}`
     const response = await api.get(url)
     return response.data

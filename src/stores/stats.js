@@ -21,7 +21,6 @@ export const useStatsStore = defineStore('stats', () => {
   })
   const topIssues = computed(() => stats.value?.top_issues || [])
 
-  // Computed для удобства
   const totalTickets = computed(() => overview.value.total_tickets)
   const unclassifiedCount = computed(() => overview.value.unclassified)
   const manualClassifications = computed(() => overview.value.manual_classifications)
@@ -32,7 +31,7 @@ export const useStatsStore = defineStore('stats', () => {
   async function fetchStats() {
     loading.value = true
     error.value = null
-    
+
     try {
       const response = await ticketsApi.getStats()
       stats.value = response
@@ -49,7 +48,7 @@ export const useStatsStore = defineStore('stats', () => {
     stats,
     loading,
     error,
-    
+
     // Getters
     categories,
     statuses,
@@ -61,7 +60,7 @@ export const useStatsStore = defineStore('stats', () => {
     manualClassifications,
     aiClassifications,
     avgConfidence,
-    
+
     // Actions
     fetchStats
   }
